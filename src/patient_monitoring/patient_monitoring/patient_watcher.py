@@ -53,30 +53,30 @@ class MyNode(Node):
         
         # Detect objects in the image using mediapipe
         with mp_pose.Pose(
-                min_detection_confidence=0.5,
-                min_tracking_confidence=0.5) as pose:
+                min_detection_confidence=0.8,   #TODO: Adjust this until false positives are eliminated and false negatives are low
+                min_tracking_confidence=0.8) as pose:
 
                	results = pose.process(cv_image)
                	landmarks=results.pose_landmarks
 
                	if (landmarks):
-                    landmarks = results.pose_landmarks.landmark
+                    landmarks = landmarks.landmark
                     x_max = -1
                     y_max = -1
                     x_min = w
                     y_min = h
                     for i in range(len(landmarks)):
-                        #person_detected.landmarks[i].x = landmarks[i].x
-                        #person_detected.landmarks[i].y = landmarks[i].y
-                        #person_detected.landmarks[i].z = landmarks[i].z
-                        #person_detected.landmarks[i].visibility = landmarks[i].visibility
+                        person_detected.landmarks[i].x = landmarks[i].x
+                        person_detected.landmarks[i].y = landmarks[i].y
+                        person_detected.landmarks[i].z = landmarks[i].z
+                        person_detected.landmarks[i].visibility = landmarks[i].visibility
                         x, y = int(landmarks[i].x * w), int(landmarks[i].y *h)
-                        if 0 <= x and x <= w:
+                        if 0 <= x and x < w:
                             if x > x_max:
                                 x_max = x
                             if x < x_min:
                                 x_min = x
-                        if 0 <= y and y <= h:
+                        if 0 <= y and y < h:
                             if y > y_max:
                                 y_max = y
                             if y < y_min:
@@ -90,8 +90,8 @@ class MyNode(Node):
                     #print(x_min, x_max, y_min, y_max)
                     person_detected.x = (x_max + x_min)//2
                     person_detected.y = (y_max + y_min)//2
-                    person_detected.w = x_max - x_min
-                    person_detected.h = y_max - y_min
+                    person_detected.w = x_max - x_min + 1
+                    person_detected.h = y_max - y_min + 1
                     if(person_detected.x < 424 and person_detected.y < 240):
                         person_detected.depth = float(depth_image[person_detected.y, person_detected.x])
                         line = '\rPerson detected! (%3d, %3d): %7.1f(mm).' % (person_detected.x, person_detected.y, depth_image[person_detected.y, person_detected.x])
